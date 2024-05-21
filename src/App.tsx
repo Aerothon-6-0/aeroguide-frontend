@@ -1,4 +1,5 @@
 import './App.css'
+import { SignInButton, SignedIn, SignedOut, UserButton } from "@clerk/clerk-react"
 
 function App() {
   /**
@@ -9,7 +10,14 @@ function App() {
    */
 
   return (
-    <main></main>
+    <main>
+      <SignedOut>
+        <SignInButton />
+      </SignedOut>
+      <SignedIn>
+        <UserButton afterSignOutUrl="/" />
+      </SignedIn>
+    </main>
   )
 }
 
