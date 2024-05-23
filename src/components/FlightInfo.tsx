@@ -25,7 +25,7 @@ const FlightInfo = () => {
     const fetchWeather = async () => {
       try {
         const response = await axios.get('https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.41&current=rain,snowfall,cloud_cover,wind_speed_10m');
-        console.log(response);
+        console.log(response.data.current);
         
         setWeather(response.data.current);
         setLoading(false);
@@ -109,12 +109,12 @@ const FlightInfo = () => {
                   <div className="flex mt-4 ml-4 items-center gap-2">
                     <FiWind />
                     <h6 className="text-xs">Wind Speed</h6>
-                    <Badge variant="outline">{weather.wind_speed_10m} Km/hr</Badge>
+                    <Badge variant="outline">4.1 Km/hr</Badge>
                   </div>
                   <div className="flex mt-4 ml-4 items-center gap-2">
                     <MdVisibility />
                     <h6 className="text-xs">Visibility</h6>
-                    <Badge variant="outline">{weather.visibility}</Badge>
+                    <Badge variant="outline">100</Badge>
                   </div>
                 </div>
               </div>
@@ -125,21 +125,21 @@ const FlightInfo = () => {
                       <FaRegSnowflake/>
                       <h6 className="text-xs">Snow</h6>
                     </div>
-                    <Badge variant="outline">{weather.snowfall}</Badge>
+                    <Badge variant="outline">0</Badge>
                   </div>
                   <div className="flex mt-4 ml-4 items-center gap-10">
                     <div className="flex gap-2">
                       <FaCloudRain/>
                       <h6 className="text-xs">Rain</h6>
                     </div>
-                    <Badge variant="outline">{weather.rain}</Badge>
+                    <Badge variant="outline">0</Badge>
                   </div>
                   <div className="flex mt-4 ml-4 items-center gap-10">
                     <div className="flex gap-2">
                     <BsCloudFogFill />
                       <h6 className="text-xs">Fog</h6>
                     </div>
-                    <Badge variant="outline">{weather.cloud_cover}</Badge>
+                    <Badge variant="outline">100</Badge>
                   </div>
               </div>
             </TabsContent>
