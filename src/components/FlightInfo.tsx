@@ -13,10 +13,10 @@ import { MdFlightLand } from "react-icons/md";
 import { BsFillFuelPumpFill } from "react-icons/bs";
 import { WeatherInfo } from "../types.ts"
 import axios from 'axios'
-
-
+import MapWithBounds from './ClippedMap.tsx'
+import { useParams } from "react-router-dom";
 const FlightInfo = () => {
-
+  const { flightNum, source, destination, Time } = useParams();
   const [weather, setWeather] = useState<WeatherInfo[]>([]);
   const [loading, setLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
@@ -46,14 +46,15 @@ const FlightInfo = () => {
     return <div>{error}</div>;
   }
   return (
+    <div className="w-screen min-h-screen">
     <section className="w-full h-full flex flex-col items-center mb-20">
-        <h3 className="text-center text-indigo-400 mt-10">Thai Airways TG971</h3>
+        <h3 className="text-center text-indigo-400 mt-10">Flight {flightNum}</h3>
         <div className="flex w-full mt-10 shadow-3xl p-8 items-center justify-evenly">
             <div className="flex flex-col">
               <h4 className="text-xs">Scheduled 4 Apr</h4>
-              <h1 className="text-2xl">7:30 AM</h1>
+              <h1 className="text-2xl">{Time} AM</h1>
               <h4 className="text-xs">Scheduled 13:30</h4>
-              <h4 className="text-xs text-gray-400">Zurich Zurich Airport</h4>
+              <h4 className="text-xs text-gray-400">{source}</h4>
             </div>
             <div className="flex flex-col w-80">
               <h4 className="self-center text-amber-400">Scheduled</h4>
@@ -69,7 +70,7 @@ const FlightInfo = () => {
             <h4 className="text-xs">Scheduled 4 Apr</h4>
               <h1 className="text-2xl">7:30 AM</h1>
               <h4 className="text-xs">Scheduled 13:30</h4>
-              <h4 className="text-xs text-gray-400">Zurich Zurich Airport</h4>
+              <h4 className="text-xs text-gray-400">{destination}</h4>
             </div>
         </div>  
         <div className="w-5/6 mt-20">
@@ -187,6 +188,10 @@ const FlightInfo = () => {
           </Tabs>
         </div>
     </section>
+    <div className="mt-20">
+      <MapWithBounds/>
+    </div>
+    </div>
   );
 };
 

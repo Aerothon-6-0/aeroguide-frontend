@@ -1,7 +1,10 @@
+
 import './App.css'
-import ClippedMap from './components/ClippedMap'
+// import ClippedMap from './components/ClippedMap'
 import FlightInfo from './components/FlightInfo'
 // import FlightMap from './components/FlightMap'
+import LandingPage from './components/LandingPage'
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
 function App() {
   /**
    * TODO: Implement the following:
@@ -11,13 +14,12 @@ function App() {
    */
 
   return (
-    <main>
-      <div className="w-screen min-h-screen">
-        <FlightInfo/>
-        {/* <FlightMap /> */}
-        <ClippedMap/>
-      </div>
-    </main>
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<LandingPage/>} />
+        <Route path="/flight/:flightNum/:source/:destination/:Time" element={<FlightInfo/>} />
+      </Routes>
+    </BrowserRouter>
   )
 }
 
