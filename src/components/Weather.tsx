@@ -3,7 +3,6 @@ import React from "react";
 const Weather = () => {
   return (
     <div>
-      {" "}
       <div className="bg-gray-800 h-[50%] text-white rounded-lg p-6 flex items-center justify-between">
         <div>
           <h1 className="text-4xl font-bold">42°C</h1>

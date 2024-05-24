@@ -130,24 +130,24 @@ const LandingPage = () => {
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [flightInfo, setFlightInfo] = useState<any>(Data);
-//   useEffect(() => {
-//     const fetchFlights = async () => {
-//       try {
-    // setLoading(true)
-//         const response = await axios.get(
-//           "https://aeroguide-backend.onrender.com/api/v1/fetchData/flight"
-//         );
+  useEffect(() => {
+    const fetchFlights = async () => {
+      try {
+    setLoading(true)
+        const response = await axios.get(
+          "https://aeroguide-backend.onrender.com/api/v1/fetchData/flight"
+        );
 
-//         setFlightInfo(response.data.data);
-//         setLoading(false);
-//       } catch (err) {
-//         setError("Failed to fetch users");
-//         setLoading(false);
-//       }
-//     };
+        setFlightInfo(response.data.data);
+        setLoading(false);
+      } catch (err) {
+        setError("Failed to fetch users");
+        setLoading(false);
+      }
+    };
 
-//     fetchFlights();
-//   }, []);
+    fetchFlights();
+  }, []);
   console.log(flightInfo);
 
   const renderFlightTable = () => {
@@ -158,25 +158,26 @@ const LandingPage = () => {
         flightInfo?.map((flight: any, index: number) => (
           <TableRow key={index}>
             <TableCell>
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-2">
                 <img src="/src/images/delhi.png" className="w-10 h-10" />
                 <div className="flex flex-col gap-2">
-                  <h3>{convertUTCToIST(flight.startTime)}</h3>
-                  <h6 className="text-xs">{flight.Source}</h6>
+                  <h3>{convertUTCToIST(flight.startTime).substring(11,19)}</h3>
+                  <h6 className="text-[#0f172a] text-lg w-[80px] whitespace-nowrap overflow-hidden text-ellipsis">{flight.Source}</h6>
                 </div>
                 <img src="/src/images/route.png" className="w-28" />
                 <div className="flex flex-col gap-2">
-                  <h3>{convertUTCToIST(flight.endTime)}</h3>
-                  <h6 className="text-xs">{flight.Destination}</h6>
+                  <h3>{convertUTCToIST(flight.endTime).substring(11,19)}</h3>
+                  <h6 className="text-[#0f172a] text-lg w-[70px] whitespace-nowrap overflow-hidden text-ellipsis">{flight.Destination}</h6>
                 </div>
+                <img src="/src/images/delhi.png" className="w-10 h-10" />
               </div>
             </TableCell>
-            <TableCell>{flight.FlightNum}</TableCell>
+            <TableCell className="text-lg">{flight.FlightNum}</TableCell>
             <TableCell>
               <Badge
                 variant="outline"
                 onClick={() => handleRowClick(flight)}
-                className="cursor-pointer"
+                className="cursor-pointer p-3"
               >
                 Check
               </Badge>
@@ -231,8 +232,9 @@ const LandingPage = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead className="w-fit text-lg">Destination</TableHead>
-              <TableHead className="w-fit text-lg">Flight Number</TableHead>
+              <TableHead className="w-fit text-xl">Destination</TableHead>
+              <TableHead className="w-fit text-xl">Flight Number</TableHead>
+              <TableHead className="w-fit text-xl">Get Flight Info</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>{renderFlightTable()}</TableBody>

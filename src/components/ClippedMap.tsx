@@ -5,7 +5,7 @@ import { LatLngExpression, LatLngBounds } from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { motion } from 'framer-motion';
 import AirplaneIcon from "./AirplaneIcon";
-
+import axios from "axios"
 interface Bounds {
   northEast: { lat: number; lng: number };
   southWest: { lat: number; lng: number };
@@ -32,6 +32,30 @@ const MapWithBounds: React.FC = () => {
   const [currentPosition, setCurrentPosition] = useState<LatLngExpression>(source);
   const [animationFrame, setAnimationFrame] = useState<number | null>(null);
 
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const [boundsInfo, setBoundsInfo] = useState<any>();
+
+
+  useEffect(() => {
+    const fetchBounds = async () => {
+      try {
+    setLoading(true)
+        const response = await axios.post(
+          "https://aeroguide-backend.onrender.com/api/v1/flight/:id"
+        );
+        console.log(response);
+        
+        setBoundsInfo(response.data.data);
+        setLoading(false);
+      } catch (err) {
+        setError("Failed to fetch users");
+        setLoading(false);
+      }
+    };
+
+    fetchBounds();
+  }, []);
   const animateFlight = (path: LatLngExpression[], duration: number) => {
     const startTime = performance.now();
     const totalSteps = 100;
@@ -76,6 +100,29 @@ const MapWithBounds: React.FC = () => {
     };
   }, [animationFrame]);
 
+  const getBoundaryPoints = (sourceLat:number, sourceLong:number, destinationLat:number, destinationLong:number) => {
+    const buffer = 5
+    const minLat = Math.min(sourceLat,destinationLat) - buffer;
+    const maxLat = Math.max(sourceLat,destinationLat) + buffer;
+    const minLong = Math.min(sourceLong,destinationLong) - buffer;
+    const maxLong = Math.max(sourceLong,destinationLong) + buffer;
+
+    return {
+      "leftUpper" : [minLat,minLong],
+      "leftLower" : [maxLat,minLong],
+      "rightUpper" : [minLat,maxLong],
+      "rightLower" : [maxLat,maxLong]
+    };
+
+  }
+
+
+  const boundaryPoints = getBoundaryPoints(source[0],source[1],destination[0],destination[1])
+  const northEast:LatLngExpression = [boundaryPoints.rightUpper[0],boundaryPoints.rightUpper[1]];
+  const northWest:LatLngExpression = [boundaryPoints.leftUpper[0],boundaryPoints.leftUpper[1]];
+  const southWest:LatLngExpression = [boundaryPoints.leftLower[0],boundaryPoints.leftLower[1]];
+  const southEast:LatLngExpression = [boundaryPoints.rightLower[0],boundaryPoints.rightLower[1]];
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
       <div style={{ position: 'relative', height: '70vh', width: '100vw' }}>
@@ -93,22 +140,18 @@ const MapWithBounds: React.FC = () => {
           <Marker position={destination}>
             <Popup>Destination</Popup>
           </Marker>
-          {bounds && (
-            <>
-              <Marker position={[bounds.northEast?.lat, bounds.northEast?.lng]}>
-                <Popup>North East</Popup>
-              </Marker>
-              <Marker position={[bounds.southWest?.lat, bounds.southWest?.lng]}>
-                <Popup>South West</Popup>
-              </Marker>
-              <Marker position={[bounds.northWest?.lat, bounds.northWest?.lng]}>
-                <Popup>North West</Popup>
-              </Marker>
-              <Marker position={[bounds.southEast?.lat, bounds.southEast?.lng]}>
-                <Popup>South East</Popup>
-              </Marker>
-            </>
-          )}
+          <Marker position={northEast}>
+            <Popup>North East</Popup>
+          </Marker>
+          <Marker position={southWest}>
+            <Popup>South West</Popup>
+          </Marker>
+          <Marker position={northWest}>
+            <Popup>North West</Popup>
+          </Marker>
+          <Marker position={southEast}>
+            <Popup>South East</Popup>
+          </Marker>
           <GetMapBounds setBounds={setBounds} />
           <Polyline positions={points} color="blue" />
           {startAnimation && (
