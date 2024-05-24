@@ -76,6 +76,9 @@ module.exports = {
       },
       backgroundColor: {
         'bgcolor': '#2A599C'
+      },
+      fontFamily: {
+        poppins: ["Poppins", "sans-serif"],
       }
     },
   },

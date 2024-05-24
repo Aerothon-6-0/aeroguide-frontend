@@ -1,10 +1,10 @@
+import "./App.css";
+import Dashboard from "./components/Dashboard";
+import ClippedMap from "./components/ClippedMap";
 
-import './App.css'
-// import ClippedMap from './components/ClippedMap'
-import FlightInfo from './components/FlightInfo'
 // import FlightMap from './components/FlightMap'
-import LandingPage from './components/LandingPage'
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import LandingPage from "./components/LandingPage";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
 function App() {
   /**
    * TODO: Implement the following:
@@ -16,14 +16,15 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<LandingPage/>} />
-        <Route path="/flight/:flightNum/:source/:destination/:Time" element={<FlightInfo/>} />
+        <Route path="/" element={<LandingPage />} />
+        <Route path="/flight/:flightNum/info" element={<Dashboard />} />
+        <Route path="/flight/:flightNum/route" element={<ClippedMap />} />
       </Routes>
     </BrowserRouter>
-  )
+  );
 }
 
-export default App
+export default App;
 // frontend/src/App.tsx
 
 // import React, { useEffect, useState } from 'react';

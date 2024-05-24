@@ -6,6 +6,8 @@ declare module './Data.ts' {
     FlightNum: string;
     Source: string;
     Destination: string;
+    startTime:string;
+    endTime:string
   }
 
   const Data: Flight[];
