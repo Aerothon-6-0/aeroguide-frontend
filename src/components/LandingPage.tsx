@@ -135,7 +135,7 @@ const LandingPage = () => {
       try {
         setLoading(true);
         const response = await axios.get(
-          "http://localhost:5500/api/v1/flight"
+          "https://aeroguide-backend.onrender.com/api/v1/flight"
         );
         console.log(response);
 

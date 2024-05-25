@@ -15,6 +15,8 @@ import axios from "axios";
 import { useParams } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux-hooks";
 import { getFlightById } from "@/store/actions/flight";
+import { Badge } from "@/components/ui/badge"
+
 interface Bounds {
   northEast: { lat: number; lng: number };
   southWest: { lat: number; lng: number };
@@ -36,6 +38,7 @@ const points: LatLngExpression[] = [
   destination,
 ];
 const interpolate = (start: any, end: any, factor: number) => {
+  console.log(start, end, factor);
   const lat = start[0] + (end[0] - start[0]) * factor;
   const lng = start[1] + (end[1] - start[1]) * factor;
   return [lat, lng] as LatLngExpression;
@@ -104,7 +107,7 @@ const MapWithBounds: React.FC = () => {
   const [startAnimation, setStartAnimation] = useState(false);
   const [boundaryBound, setBoundaryBound] = useState<any>();
   const flightData: any = useAppSelector((state) => state.flight);
-  const [path1, setPath1] = useState<any>(null)
+  const [path1, setPath1] = useState<any>(null);
 
   const dispatch = useAppDispatch();
   const [currentPosition, setCurrentPosition] =
@@ -115,6 +118,7 @@ const MapWithBounds: React.FC = () => {
   const [dest, setDest] = useState<any>();
 
   const animateFlight = (path: LatLngExpression[], duration: number) => {
+    console.log(path);
     const startTime = performance.now();
     const totalSteps = 100;
     // const stepDuration = duration / totalSteps;
@@ -122,8 +126,10 @@ const MapWithBounds: React.FC = () => {
     const animate = (time: number) => {
       const elapsedTime = time - startTime;
       const progress = Math.min(elapsedTime / duration, 1);
+      console.log(progress);
 
       const segment = Math.floor(progress * (path.length - 1));
+      console.log(segment, path.length, progress, path.length - 1);
       const segmentProgress = (progress * (path.length - 1)) % 1;
 
       const start = path[segment];
@@ -146,12 +152,11 @@ const MapWithBounds: React.FC = () => {
   const handleStartAnimation = () => {
     if (!startAnimation) {
       setStartAnimation(true);
-      animateFlight(points, 10000); // 10 seconds for the entire flight path
+      animateFlight([src, ...path1, dest], 10000); // 10 seconds for the entire flight path
     }
   };
 
   useEffect(() => {
-
     const fetchFlightData = async () => {
       try {
         const data: any = await dispatch(
@@ -159,7 +164,6 @@ const MapWithBounds: React.FC = () => {
         );
 
         if (data.payload.data) {
-
           setSrc([
             data.payload.data.flight.origin.location[0],
             data.payload.data.flight.origin.location[1],
@@ -176,26 +180,24 @@ const MapWithBounds: React.FC = () => {
     fetchFlightData();
   }, [dispatch, params.flightNum]);
 
-
-
-
-
   useEffect(() => {
     const fetchOptimizedRoute = async () => {
       if (src && dest) {
-        const { northEast, southEast, southWest, northWest, boundObj } = getBoundsInformation(src, dest);
-        console.log(boundObj, 'boundObj')
+        const { northEast, southEast, southWest, northWest, boundObj } =
+          getBoundsInformation(src, dest);
+
         setBoundsInfo({ northEast, southEast, southWest, northWest });
-        setBoundaryBound(boundObj)
+        setBoundaryBound(boundObj);
 
         try {
-
           const optimalRoute = await axios.post(
-            `https://b2e7-103-92-103-55.ngrok-free.app/api/v1/flight/${params.flightNum}`,
+            `https://aeroguide-backend.onrender.com/api/v1/flight/${params.flightNum}`,
             { bounds: boundObj }
           );
-          console.log(optimalRoute.data.path1.map((path: any) => [path.lat, path.long]));
-          setPath1(optimalRoute.data.path1.map((path: any) => [path.lat, path.long]))
+
+          setPath1(
+            optimalRoute.data.path1.map((path: any) => [path.lat, path.long])
+          );
         } catch (error) {
           console.error(error);
         }
@@ -203,7 +205,6 @@ const MapWithBounds: React.FC = () => {
     };
     fetchOptimizedRoute();
   }, [params.flightNum, src]);
-  console.log(path1)
 
   useEffect(() => {
     return () => {
@@ -214,19 +215,32 @@ const MapWithBounds: React.FC = () => {
   }, [animationFrame]);
 
   return (
-    <div
-      style={{ display: "flex", flexDirection: "column", alignItems: "center" }}
-    >
-      {/* <div className="w-30 h-screen">
-
-      </div> */}
+    <div className="flex w-screen items-center">
+      <div className="flex flex-col p-10 w-[30%] h-screen bg-blue-200 shadow-3xl">
+        <h1 className="mt-10 ml-10 font-semibold">Emergency Conditions</h1>
+        <h3 className="mt-10 ml-10 font-semibold">Fuel Emergency</h3>
+        <h3 className="mt-10 ml-10 font-semibold">Medical Emergency</h3>
+        <h3 className="mt-10 ml-10 font-semibold">Flight Emergency</h3>
+        <h3 className="mt-10 ml-10 font-semibold">Security Emergency</h3>
+        <h3 className="mt-10 ml-10 font-semibold">Communication Emergency</h3>
+        <h3 className="mt-10 ml-10 font-semibold">Hijack</h3>
+        <h3 className="mt-10 ml-10 font-semibold">Weather Emergency - Visibility, Storm</h3>
+        <button onClick={handleStartAnimation} style={{ marginTop: "150px" }}>
+        <Badge variant="outline" className="p-3 text-blue-900">Start Animation</Badge>
+        </button>
+      </div>
       {src && dest && boundsInfo && path1 && (
         <div
-          style={{ position: "relative", height: "70vh", width: "70vw" }}
-          className="bg-black"
+          style={{ position: "relative", height: "100vh" }}
+          className="bg-black w-[70%]"
         >
           <MapContainer
-            bounds={new LatLngBounds(L.latLng(src[0], src[1]), L.latLng(dest[0], dest[1]))}
+            bounds={
+              new LatLngBounds(
+                L.latLng(src[0], src[1]),
+                L.latLng(dest[0], dest[1])
+              )
+            }
             style={{ height: "100%", width: "100%" }}
           >
             <TileLayer
@@ -293,9 +307,6 @@ const MapWithBounds: React.FC = () => {
           )}
         </div>
       )}
-      <button onClick={handleStartAnimation} style={{ marginTop: "10px" }}>
-        Start Animation
-      </button>
     </div>
   );
 };
