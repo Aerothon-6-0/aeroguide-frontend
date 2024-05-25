@@ -5,6 +5,7 @@ import ClippedMap from "./components/ClippedMap";
 // import FlightMap from './components/FlightMap'
 import LandingPage from "./components/LandingPage";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
+import FlightInfo from "./components/FlightInfo";
 function App() {
   /**
    * TODO: Implement the following:
@@ -17,7 +18,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<LandingPage />} />
-        <Route path="/flight/:flightNum/info" element={<Dashboard />} />
+        <Route path="/flight/:flightNum/info" element={<FlightInfo />} />
         <Route path="/flight/:flightNum/route" element={<ClippedMap />} />
       </Routes>
     </BrowserRouter>
