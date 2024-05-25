@@ -38,7 +38,8 @@ const points: LatLngExpression[] = [
   destination,
 ];
 const interpolate = (start: any, end: any, factor: number) => {
-  console.log(start, end, factor);
+
+  console.log(start, end, factor)
   const lat = start[0] + (end[0] - start[0]) * factor;
   const lng = start[1] + (end[1] - start[1]) * factor;
   return [lat, lng] as LatLngExpression;
@@ -118,7 +119,7 @@ const MapWithBounds: React.FC = () => {
   const [dest, setDest] = useState<any>();
 
   const animateFlight = (path: LatLngExpression[], duration: number) => {
-    console.log(path);
+    console.log(path)
     const startTime = performance.now();
     const totalSteps = 100;
     // const stepDuration = duration / totalSteps;
@@ -183,8 +184,7 @@ const MapWithBounds: React.FC = () => {
   useEffect(() => {
     const fetchOptimizedRoute = async () => {
       if (src && dest) {
-        const { northEast, southEast, southWest, northWest, boundObj } =
-          getBoundsInformation(src, dest);
+        const { northEast, southEast, southWest, northWest, boundObj } = getBoundsInformation(src, dest);
 
         setBoundsInfo({ northEast, southEast, southWest, northWest });
         setBoundaryBound(boundObj);
@@ -195,9 +195,7 @@ const MapWithBounds: React.FC = () => {
             { bounds: boundObj }
           );
 
-          setPath1(
-            optimalRoute.data.path1.map((path: any) => [path.lat, path.long])
-          );
+          setPath1(optimalRoute.data.path1.map((path: any) => [path.lat, path.long]))
         } catch (error) {
           console.error(error);
         }
@@ -205,6 +203,7 @@ const MapWithBounds: React.FC = () => {
     };
     fetchOptimizedRoute();
   }, [params.flightNum, src]);
+
 
   useEffect(() => {
     return () => {
