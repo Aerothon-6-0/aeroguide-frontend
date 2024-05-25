@@ -13,12 +13,14 @@ import { MdFlightLand } from "react-icons/md";
 import { BsFillFuelPumpFill } from "react-icons/bs";
 import { WeatherInfo } from "../types.ts"
 import {time, date} from "../lib/utils.ts";
+import { useNavigate } from "react-router-dom";
 // import axios from 'axios'
 // import MapWithBounds from './ClippedMap.tsx'
 import { useParams } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux-hooks.ts";
 import { getFlightById } from "@/store/actions/flight.ts";
 const FlightInfo = () => {
+    const navigate = useNavigate();
     const { flightNum, source, destination, Time } = useParams();
     const flightData = useAppSelector(state => state.flight)
     const [weather, setWeather] = useState<WeatherInfo[]>([]);
@@ -41,6 +43,10 @@ const FlightInfo = () => {
 
         fetchWeather();
     }, []);
+
+    const handleRoute = (id: number) => {
+        navigate(`/flight/${id}/route`);
+    }
 
     // useEffect(() => {
     //     console.log(flightData)
@@ -68,7 +74,7 @@ const FlightInfo = () => {
                         <h4 className="text-xs text-gray-400">{source}</h4>
                     </div>
                     <div className="flex flex-col w-80">
-                        <h4 className="self-center text-amber-400">Scheduled</h4>
+                        <h4 className="self-center text-amber-400">{flightData?.flightData?.flight.status}</h4>
                         <div className="bg-gray-400 w-full h-0.5 flex mt-5">
                             <img src="/src/images/flight.png" className="w-7 h-7 m-auto self-center" />
                         </div>
@@ -126,7 +132,7 @@ const FlightInfo = () => {
                                     <div className="flex mt-4 ml-4 items-center gap-2">
                                         <MdVisibility />
                                         <h6 className="text-xs">Visibility</h6>
-                                        <Badge variant="outline">100</Badge>
+                                        <Badge variant="outline">{Math.floor(flightData?.flightData?.weatherInfo.current.cloudCover)}</Badge>
                                     </div>
                                 </div>
                             </div>
@@ -185,7 +191,7 @@ const FlightInfo = () => {
                                         <MdFlightLand />
                                         <h6 className="text-xs">Damage Part</h6>
                                     </div>
-                                    <Badge variant="outline">{}</Badge>
+                                    <Badge variant="outline">NO</Badge>
                                 </div>
                                 <div className="flex mt-4 ml-4 items-center gap-10">
                                     <div className="flex gap-2">
@@ -200,7 +206,7 @@ const FlightInfo = () => {
                 </div>
             </section>
             <div className="mt-20">
-                {/* <MapWithBounds /> */}
+                { <button onClick={() => handleRoute(flightData?.flightData?.flight.id)}> check Route</button>}
             </div>
         </div>
 
