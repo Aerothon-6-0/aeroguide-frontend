@@ -36,6 +36,7 @@ const points: LatLngExpression[] = [
   destination,
 ];
 const interpolate = (start: any, end: any, factor: number) => {
+  console.log(start, end, factor)
   const lat = start[0] + (end[0] - start[0]) * factor;
   const lng = start[1] + (end[1] - start[1]) * factor;
   return [lat, lng] as LatLngExpression;
@@ -115,6 +116,7 @@ const MapWithBounds: React.FC = () => {
   const [dest, setDest] = useState<any>();
 
   const animateFlight = (path: LatLngExpression[], duration: number) => {
+    console.log(path)
     const startTime = performance.now();
     const totalSteps = 100;
     // const stepDuration = duration / totalSteps;
@@ -123,7 +125,9 @@ const MapWithBounds: React.FC = () => {
       const elapsedTime = time - startTime;
       const progress = Math.min(elapsedTime / duration, 1);
 
+
       const segment = Math.floor(progress * (path.length - 1));
+      console.log(segment, path.length, progress, path.length - 1)
       const segmentProgress = (progress * (path.length - 1)) % 1;
 
       const start = path[segment];
@@ -146,7 +150,7 @@ const MapWithBounds: React.FC = () => {
   const handleStartAnimation = () => {
     if (!startAnimation) {
       setStartAnimation(true);
-      animateFlight(points, 10000); // 10 seconds for the entire flight path
+      animateFlight([src, ...path1, dest], 10000); // 10 seconds for the entire flight path
     }
   };
 
@@ -184,7 +188,7 @@ const MapWithBounds: React.FC = () => {
     const fetchOptimizedRoute = async () => {
       if (src && dest) {
         const { northEast, southEast, southWest, northWest, boundObj } = getBoundsInformation(src, dest);
-        console.log(boundObj, 'boundObj')
+
         setBoundsInfo({ northEast, southEast, southWest, northWest });
         setBoundaryBound(boundObj)
 
@@ -194,7 +198,7 @@ const MapWithBounds: React.FC = () => {
             `https://aeroguide-backend.onrender.com/api/v1/flight/${params.flightNum}`,
             { bounds: boundObj }
           );
-          console.log(optimalRoute.data.path1.map((path: any) => [path.lat, path.long]));
+
           setPath1(optimalRoute.data.path1.map((path: any) => [path.lat, path.long]))
         } catch (error) {
           console.error(error);
@@ -203,7 +207,7 @@ const MapWithBounds: React.FC = () => {
     };
     fetchOptimizedRoute();
   }, [params.flightNum, src]);
-  console.log(path1)
+
 
   useEffect(() => {
     return () => {
