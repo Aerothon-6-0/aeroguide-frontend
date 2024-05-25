@@ -12,7 +12,7 @@ import "leaflet/dist/leaflet.css";
 import { motion } from "framer-motion";
 import AirplaneIcon from "./AirplaneIcon";
 import axios from "axios";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux-hooks";
 import { getFlightById } from "@/store/actions/flight";
 import { Badge } from "@/components/ui/badge";
@@ -109,28 +109,26 @@ const MapWithBounds: React.FC = () => {
   const [boundaryBound, setBoundaryBound] = useState<any>();
   const flightData: any = useAppSelector((state) => state.flight);
   const [path1, setPath1] = useState<any>(null);
+  const [loading, setLoading] = useState<boolean>(false);
 
+  const source: LatLngExpression = [11.505, 77.09];
   const dispatch = useAppDispatch();
   const [currentPosition, setCurrentPosition] =
     useState<LatLngExpression>(source);
+
   const [animationFrame, setAnimationFrame] = useState<number | null>(null);
   const params = useParams();
   const [src, setSrc] = useState<any>();
   const [dest, setDest] = useState<any>();
 
   const animateFlight = (path: LatLngExpression[], duration: number) => {
-    console.log(path);
     const startTime = performance.now();
-    const totalSteps = 100;
-    // const stepDuration = duration / totalSteps;
 
-    const animate = (time: number) => {
-      const elapsedTime = time - startTime;
+    const animate = (currentTime: number) => {
+      const elapsedTime = currentTime - startTime;
       const progress = Math.min(elapsedTime / duration, 1);
-      console.log(progress);
 
       const segment = Math.floor(progress * (path.length - 1));
-      console.log(segment, path.length, progress, path.length - 1);
       const segmentProgress = (progress * (path.length - 1)) % 1;
 
       const start = path[segment];
@@ -150,10 +148,14 @@ const MapWithBounds: React.FC = () => {
     setAnimationFrame(requestAnimationFrame(animate));
   };
 
+
   const handleStartAnimation = () => {
     if (!startAnimation) {
       setStartAnimation(true);
-      animateFlight([src, ...path1, dest], 10000); // 10 seconds for the entire flight path
+      setCurrentPosition(src);
+      const newPath = [...path1].reverse()
+      console.log(newPath)
+      animateFlight([src, ...newPath, dest], 10000); // 10 seconds for the entire flight path
     }
   };
 
@@ -173,13 +175,14 @@ const MapWithBounds: React.FC = () => {
             data.payload.data.flight.destination.location[0],
             data.payload.data.flight.destination.location[1],
           ]);
+          // setCurrentPosition(L.latLng(data.payload.data.flight.origin.location[0], data.payload.data.flight.origin.location[1]));
         }
       } catch (error) {
         console.error(error);
       }
     };
     fetchFlightData();
-  }, [dispatch, params.flightNum]);
+  }, [params.flightNum]);
 
   useEffect(() => {
     const fetchOptimizedRoute = async () => {
@@ -191,14 +194,14 @@ const MapWithBounds: React.FC = () => {
         setBoundaryBound(boundObj);
 
         try {
+          setLoading(true);
           const optimalRoute = await axios.post(
             `http://localhost:5500/api/v1/flight/${params.flightNum}`,
             { bounds: boundObj }
           );
 
-          setPath1(
-            optimalRoute.data.path1.map((path: any) => [path.lat, path.long])
-          );
+          setPath1(optimalRoute.data.path1.map((path: any) => [path.lat, path.long]))
+          setLoading(false)
         } catch (error) {
           console.error(error);
         }
@@ -218,6 +221,7 @@ const MapWithBounds: React.FC = () => {
   return (
     <div className="flex w-screen items-center">
       <div className="flex flex-col p-10 w-[30%] h-screen bg-blue-200 shadow-3xl gap-3">
+        <Link to={`/flight/${params.flightNum}/info`}>Back</Link>
         <h1 className="mt-10 ml-10 text-2xl font-bold mb-20">
           Emergency Conditions
         </h1>
@@ -257,12 +261,10 @@ const MapWithBounds: React.FC = () => {
           </h1>
         </div>
         <button onClick={handleStartAnimation} style={{ marginTop: "150px" }}>
-          <Badge variant="outline" className="p-3 text-blue-900">
-            Start Animation
-          </Badge>
+          <Badge variant="outline" className="p-3 text-blue-900">Start Animation</Badge>
         </button>
       </div>
-      {src && dest && boundsInfo && path1 && (
+      {loading ? <div>Loading...</div> : src && dest && boundsInfo && path1 && currentPosition && (
         <div
           style={{ position: "relative", height: "100vh" }}
           className="bg-black w-[70%]"
