@@ -205,8 +205,9 @@ const FlightInfo = () => {
                     </Tabs>
                 </div>
             </section>
-            <div className="mt-20">
-                { <button onClick={() => handleRoute(flightData?.flightData?.flight.id)}> check Route</button>}
+            <div className="flex justify-center bg-gray-10">
+                { <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                onClick={() => handleRoute(flightData?.flightData?.flight.id)}> check Route</button>}
             </div>
         </div>
 
