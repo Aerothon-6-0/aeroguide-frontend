@@ -227,35 +227,35 @@ const MapWithBounds: React.FC = () => {
         </h1>
 
         <div className="flex gap-2 justify-start items-center">
-          <Checkbox />
+          <Checkbox id="1"/>
           <h1 className="font-semibold">Fuel Emergency</h1>
         </div>
         <div className="flex gap-2 justify-start items-center">
-          <Checkbox />
+          <Checkbox id="2"/>
           <h1 className="font-semibold">Medical Emergency</h1>
         </div>
         <div className="flex gap-2 justify-start items-center">
-          <Checkbox />
+          <Checkbox id="3"/>
           <h1 className="font-semibold">Flight Emergency</h1>
         </div>
         <div className="flex gap-2 justify-start items-center">
-          <Checkbox />
+          <Checkbox id="4"/>
           <h1 className="font-semibold">Security Emergency</h1>
         </div>
         <div className="flex gap-2 justify-start items-center">
-          <Checkbox />
+          <Checkbox id="5"/>
           <h1 className="font-semibold">Communication Emergency</h1>
         </div>
         <div className="flex gap-2 justify-start items-center">
-          <Checkbox />
-          <h1 className="font-semibold">Emergency Conditions</h1>
+          <Checkbox id="6"/>
+          <h1 className="font-semibold">Airspace</h1>
         </div>
         <div className="flex gap-2 justify-start items-center">
-          <Checkbox />
+          <Checkbox id="7"/>
           <h1 className="font-semibold">Hijack</h1>
         </div>
         <div className="flex gap-2 justify-start items-start">
-          <Checkbox />
+          <Checkbox id="8"/>
           <h1 className="font-semibold">
             Weather Emergency - Visibility, Storm
           </h1>
