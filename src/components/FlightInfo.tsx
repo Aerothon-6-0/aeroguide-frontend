@@ -12,7 +12,7 @@ import { FcElectronics } from "react-icons/fc";
 import { MdFlightLand } from "react-icons/md";
 import { BsFillFuelPumpFill } from "react-icons/bs";
 import { WeatherInfo } from "../types.ts"
-import {time, date} from "../lib/utils.ts";
+import { time, date } from "../lib/utils.ts";
 import { useNavigate } from "react-router-dom";
 // import axios from 'axios'
 // import MapWithBounds from './ClippedMap.tsx'
@@ -64,7 +64,7 @@ const FlightInfo = () => {
         flightData &&
         <div className="w-screen min-h-screen">
             <section className="w-full h-full flex flex-col items-center mb-20">
-                
+
                 <h3 className="text-center text-indigo-400 mt-10">Flight {flightData?.flightData?.flight.flightNumber}</h3>
                 <div className="flex w-full mt-10 shadow-3xl p-8 items-center justify-evenly">
                     <div className="flex flex-col">
@@ -184,7 +184,7 @@ const FlightInfo = () => {
                                         <FcElectronics />
                                         <h6 className="text-xs">Electronic Failure</h6>
                                     </div>
-                                    <Badge variant="outline">{(flightData?.flightData?.riskAssessment.electronicFailure) ? 'low' : 'high'}</Badge>
+                                    <Badge variant="outline">{(flightData?.flightData?.riskAssessment?.electronicFailure) ? 'low' : 'high'}</Badge>
                                 </div>
                                 <div className="flex mt-4 ml-4 items-center gap-10">
                                     <div className="flex gap-2">
@@ -206,8 +206,8 @@ const FlightInfo = () => {
                 </div>
             </section>
             <div className="flex justify-center bg-gray-10">
-                { <button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-                onClick={() => handleRoute(flightData?.flightData?.flight.id)}> check Route</button>}
+                {<button className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                    onClick={() => handleRoute(flightData?.flightData?.flight?.id)}> check Route</button>}
             </div>
         </div>
 

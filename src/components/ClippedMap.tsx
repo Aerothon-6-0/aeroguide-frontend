@@ -17,6 +17,8 @@ import { useAppDispatch, useAppSelector } from "@/hooks/redux-hooks";
 import { getFlightById } from "@/store/actions/flight";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Card, CardContent, CardHeader } from "./ui/card";
+import CircularProgress from "./ui/circular-progress";
 
 interface Bounds {
   northEast: { lat: number; lng: number };
@@ -109,6 +111,7 @@ const MapWithBounds: React.FC = () => {
   const [boundaryBound, setBoundaryBound] = useState<any>();
   const flightData: any = useAppSelector((state) => state.flight);
   const [path1, setPath1] = useState<any>(null);
+  const [pathInfo, setPathInfo] = useState<any>(null)
   const [loading, setLoading] = useState<boolean>(false);
 
   const source: LatLngExpression = [11.505, 77.09];
@@ -150,27 +153,27 @@ const MapWithBounds: React.FC = () => {
 
   const addRisk = async () => {
     const data = {
-      
+
       flightId: params.flightNum,
       electronicFailure: (checkboxes.communicationEmergency) ? true : false,
       visibilityIssue: (checkboxes.weatherEmergency) ? true : false,
-      otherRisks : {
-          mdeicalIsues : checkboxes.medicalEmergency,
-          hijack : checkboxes.hijack,
-          securityEmergency : checkboxes.securityEmergency,
-          flightEmergency : checkboxes.flightEmergency,
-          fuelEmergency : checkboxes.fuelEmergency,
+      otherRisks: {
+        mdeicalIsues: checkboxes.medicalEmergency,
+        hijack: checkboxes.hijack,
+        securityEmergency: checkboxes.securityEmergency,
+        flightEmergency: checkboxes.flightEmergency,
+        fuelEmergency: checkboxes.fuelEmergency,
       },
-      riskLevel :(checkboxes.emergencyConditions) ? "High" : "low",
-      currentLocation : [src,dest]
-  
-  }
+      riskLevel: (checkboxes.emergencyConditions) ? "High" : "low",
+      currentLocation: [src, dest]
 
-  
+    }
 
-  const Risk = await axios.post(
+
+
+    const Risk = await axios.post(
       `http://localhost:8000/api/v1/emergency`,
-      {data }
+      { data }
     );
 
     console.log(Risk)
@@ -179,7 +182,7 @@ const MapWithBounds: React.FC = () => {
 
   const handleStartAnimation = () => {
 
-  
+
 
     if (!startAnimation) {
       setStartAnimation(true);
@@ -190,7 +193,7 @@ const MapWithBounds: React.FC = () => {
     }
   };
 
-  
+
 
 
   useEffect(() => {
@@ -239,6 +242,19 @@ const MapWithBounds: React.FC = () => {
         } catch (error) {
           console.error(error);
         }
+        // try {
+        //   setLoading(true);
+        //   const optimalRoute = await axios.post(
+        //     `http://localhost:5500/api/v1/flight/${params.flightNum}`,
+        //     { bounds: boundObj }
+        //   );
+        //   const pathInfo = optimalRoute?.data
+        //   setPathInfo(pathInfo);
+        //   setPath1(optimalRoute?.data?.path1.map((path: any) => [path.lat, path.long]))
+        //   setLoading(false)
+        // } catch (error) {
+        //   console.error(error);
+        // }
       }
     };
     fetchOptimizedRoute();
@@ -275,46 +291,60 @@ const MapWithBounds: React.FC = () => {
 
   return (
     <div className="flex w-screen items-center">
-      <div className="flex flex-col p-10 w-[30%] h-screen bg-blue-200 shadow-3xl gap-3">
+
+      <div className="flex flex-col p-5 w-[30%] h-screen bg-blue-200 space-y-2 shadow-3xl gap-3">
         <Link to={`/flight/${params.flightNum}/info`}>Back</Link>
-        <h1 className="mt-10 ml-10 text-2xl font-bold mb-20">
+
+        <h1 className="mt-10  text-2xl font-bold mb-5">
           Emergency Conditions
         </h1>
 
         <div className="flex gap-2 justify-start items-center">
-        <Checkbox checked={checkboxes.fuelEmergency} onCheckedChange={handleCheckboxChange('fuelEmergency')} />
-        <h1 className="font-semibold">Fuel Emergency</h1>
-      </div>
-      <div className="flex gap-2 justify-start items-center">
-        <Checkbox checked={checkboxes.medicalEmergency} onCheckedChange={handleCheckboxChange('medicalEmergency')} />
-        <h1 className="font-semibold">Medical Emergency</h1>
-      </div>
-      <div className="flex gap-2 justify-start items-center">
-        <Checkbox checked={checkboxes.flightEmergency} onCheckedChange={handleCheckboxChange('flightEmergency')} />
-        <h1 className="font-semibold">Flight Emergency</h1>
-      </div>
-      <div className="flex gap-2 justify-start items-center">
-        <Checkbox checked={checkboxes.securityEmergency} onCheckedChange={handleCheckboxChange('securityEmergency')} />
-        <h1 className="font-semibold">Security Emergency</h1>
-      </div>
-      <div className="flex gap-2 justify-start items-center">
-        <Checkbox checked={checkboxes.communicationEmergency} onCheckedChange={handleCheckboxChange('communicationEmergency')} />
-        <h1 className="font-semibold">Communication Emergency</h1>
-      </div>
-      <div className="flex gap-2 justify-start items-center">
-        <Checkbox checked={checkboxes.emergencyConditions} onCheckedChange={handleCheckboxChange('emergencyConditions')} />
-        <h1 className="font-semibold">Emergency Conditions</h1>
-      </div>
-      <div className="flex gap-2 justify-start items-center">
-        <Checkbox checked={checkboxes.hijack} onCheckedChange={handleCheckboxChange('hijack')} />
-        <h1 className="font-semibold">Hijack</h1>
-      </div>
-      <div className="flex gap-2 justify-start items-start">
-        <Checkbox checked={checkboxes.weatherEmergency} onCheckedChange={handleCheckboxChange('weatherEmergency')} />
-        <h1 className="font-semibold">Weather Emergency - Visibility, Storm</h1>
+          <Checkbox checked={checkboxes.fuelEmergency} onCheckedChange={handleCheckboxChange('fuelEmergency')} />
+          <h1 className="font-semibold">Fuel Emergency</h1>
         </div>
-        <button onClick={ handleStartAnimation} style={{ marginTop: "150px" }}>
-          <Badge variant="outline" className="p-3 text-blue-900">Start Animation</Badge>
+        <div className="flex gap-2 justify-start items-center">
+          <Checkbox checked={checkboxes.medicalEmergency} onCheckedChange={handleCheckboxChange('medicalEmergency')} />
+          <h1 className="font-semibold">Medical Emergency</h1>
+        </div>
+        <div className="flex gap-2 justify-start items-center">
+          <Checkbox checked={checkboxes.flightEmergency} onCheckedChange={handleCheckboxChange('flightEmergency')} />
+          <h1 className="font-semibold">Flight Emergency</h1>
+        </div>
+        <div className="flex gap-2 justify-start items-center">
+          <Checkbox checked={checkboxes.securityEmergency} onCheckedChange={handleCheckboxChange('securityEmergency')} />
+          <h1 className="font-semibold">Security Emergency</h1>
+        </div>
+        <div className="flex gap-2 justify-start items-center">
+          <Checkbox checked={checkboxes.communicationEmergency} onCheckedChange={handleCheckboxChange('communicationEmergency')} />
+          <h1 className="font-semibold">Communication Emergency</h1>
+        </div>
+        <div className="flex gap-2 justify-start items-center">
+          <Checkbox checked={checkboxes.emergencyConditions} onCheckedChange={handleCheckboxChange('emergencyConditions')} />
+          <h1 className="font-semibold">Emergency Conditions</h1>
+        </div>
+        <div className="flex gap-2 justify-start items-center">
+          <Checkbox checked={checkboxes.hijack} onCheckedChange={handleCheckboxChange('hijack')} />
+          <h1 className="font-semibold">Hijack</h1>
+        </div>
+        <div className="flex gap-2 justify-start items-start">
+          <Checkbox checked={checkboxes.weatherEmergency} onCheckedChange={handleCheckboxChange('weatherEmergency')} />
+          <h1 className="font-semibold">Weather Emergency - Visibility, Storm</h1>
+        </div>
+        <div>
+          <Card className="p-2">
+            <CardContent>
+              <div className="flex flex-col items-center">
+                <h1 className="font-semibold">Risk Percentage:</h1>
+                <CircularProgress percentage={pathInfo?.path1_risk_percentage || 0} />
+                <h1 className="font-medium mt-2"><span className="text-card-foreground font-bold">Risk Message</span> : {pathInfo?.path1_risk_message}</h1>
+              </div>
+            </CardContent>
+          </Card>
+
+        </div>
+        <button onClick={handleStartAnimation} style={{ marginTop: "20px" }}>
+          <Badge variant="default" className="p-3 ">Start Animation</Badge>
         </button>
       </div>
       {loading ? <div>Loading...</div> : src && dest && boundsInfo && path1 && currentPosition && (
