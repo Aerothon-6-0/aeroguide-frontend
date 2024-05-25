@@ -104,6 +104,7 @@ const MapWithBounds: React.FC = () => {
   const [startAnimation, setStartAnimation] = useState(false);
   const [boundaryBound, setBoundaryBound] = useState<any>();
   const flightData: any = useAppSelector((state) => state.flight);
+  const [path1, setPath1] = useState<any>(null)
 
   const dispatch = useAppDispatch();
   const [currentPosition, setCurrentPosition] =
@@ -193,7 +194,8 @@ const MapWithBounds: React.FC = () => {
             `https://b2e7-103-92-103-55.ngrok-free.app/api/v1/flight/${params.flightNum}`,
             { bounds: boundObj }
           );
-          console.log(optimalRoute);
+          console.log(optimalRoute.data.path1.map((path: any) => [path.lat, path.long]));
+          setPath1(optimalRoute.data.path1.map((path: any) => [path.lat, path.long]))
         } catch (error) {
           console.error(error);
         }
@@ -201,7 +203,7 @@ const MapWithBounds: React.FC = () => {
     };
     fetchOptimizedRoute();
   }, [params.flightNum, src]);
-
+  console.log(path1)
 
   useEffect(() => {
     return () => {
@@ -218,7 +220,7 @@ const MapWithBounds: React.FC = () => {
       {/* <div className="w-30 h-screen">
 
       </div> */}
-      {src && dest && boundsInfo && (
+      {src && dest && boundsInfo && path1 && (
         <div
           style={{ position: "relative", height: "70vh", width: "70vw" }}
           className="bg-black"
@@ -250,7 +252,7 @@ const MapWithBounds: React.FC = () => {
               <Popup>South East</Popup>
             </Marker>
             <GetMapBounds setBounds={setBounds} />
-            <Polyline positions={[src, dest]} color="blue" />
+            <Polyline positions={[src, ...path1, dest]} color="blue" />
             {startAnimation && (
               <motion.div
                 style={{
