@@ -135,7 +135,7 @@ const LandingPage = () => {
       try {
         setLoading(true);
         const response = await axios.get(
-          "http://localhost:5500/api/v1/flight"
+          "http://https://d0ee-2405-201-8010-d126-359a-546d-d6f4-bbf7.ngrok-free.app/api/v1/flight"
         );
         console.log(response);
 

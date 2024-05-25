@@ -12,22 +12,25 @@ import { FcElectronics } from "react-icons/fc";
 import { MdFlightLand } from "react-icons/md";
 import { BsFillFuelPumpFill } from "react-icons/bs";
 import { WeatherInfo } from "../types.ts"
-import axios from 'axios'
-import MapWithBounds from './ClippedMap.tsx'
+// import axios from 'axios'
+// import MapWithBounds from './ClippedMap.tsx'
 import { useParams } from "react-router-dom";
+import { useAppDispatch, useAppSelector } from "@/hooks/redux-hooks.ts";
+import { getFlightById } from "@/store/actions/flight.ts";
 const FlightInfo = () => {
     const { flightNum, source, destination, Time } = useParams();
+    const flightData = useAppSelector(state => state.flight)
     const [weather, setWeather] = useState<WeatherInfo[]>([]);
-    const [loading, setLoading] = useState<boolean>(true);
+    const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
+    const dispatch = useAppDispatch();
 
     useEffect(() => {
         const fetchWeather = async () => {
             try {
-                const response = await axios.get('https://api.open-meteo.com/v1/forecast?latitude=52.52&longitude=13.41&current=rain,snowfall,cloud_cover,wind_speed_10m');
-                console.log(response.data.current);
-
-                setWeather(response.data.current);
+                setLoading(true);
+                const data = await dispatch(getFlightById({ flightId: flightNum }));
+                console.log(data)
                 setLoading(false);
             } catch (err) {
                 setError('Failed to fetch users');
@@ -46,12 +49,14 @@ const FlightInfo = () => {
         return <div>{error}</div>;
     }
     return (
+
+        flightData &&
         <div className="w-screen min-h-screen">
             <section className="w-full h-full flex flex-col items-center mb-20">
-                <h3 className="text-center text-indigo-400 mt-10">Flight {flightNum}</h3>
+                <h3 className="text-center text-indigo-400 mt-10">Flight {flightData?.flightData?.flightNum}</h3>
                 <div className="flex w-full mt-10 shadow-3xl p-8 items-center justify-evenly">
                     <div className="flex flex-col">
-                        <h4 className="text-xs">Scheduled 4 Apr</h4>
+                        <h4 className="text-xs">{'hi'}</h4>
                         <h1 className="text-2xl">{Time} AM</h1>
                         <h4 className="text-xs">Scheduled 13:30</h4>
                         <h4 className="text-xs text-gray-400">{source}</h4>
@@ -189,9 +194,11 @@ const FlightInfo = () => {
                 </div>
             </section>
             <div className="mt-20">
-                <MapWithBounds />
+                {/* <MapWithBounds /> */}
             </div>
         </div>
+
+
     );
 };
 

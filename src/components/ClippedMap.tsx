@@ -191,7 +191,7 @@ const MapWithBounds: React.FC = () => {
         try {
 
           const optimalRoute = await axios.post(
-            `https://b2e7-103-92-103-55.ngrok-free.app/api/v1/flight/${params.flightNum}`,
+            `https://aeroguide-backend.onrender.com/api/v1/flight/${params.flightNum}`,
             { bounds: boundObj }
           );
           console.log(optimalRoute.data.path1.map((path: any) => [path.lat, path.long]));
