@@ -177,7 +177,7 @@ const MapWithBounds: React.FC = () => {
 
   }
 
-  const handleStartAnimation = async() => {
+  const handleStartAnimation = () => {
 
   
 
@@ -313,7 +313,7 @@ const MapWithBounds: React.FC = () => {
         <Checkbox checked={checkboxes.weatherEmergency} onCheckedChange={handleCheckboxChange('weatherEmergency')} />
         <h1 className="font-semibold">Weather Emergency - Visibility, Storm</h1>
         </div>
-        <button onClick={() => handleStartAnimation} style={{ marginTop: "150px" }}>
+        <button onClick={ handleStartAnimation} style={{ marginTop: "150px" }}>
           <Badge variant="outline" className="p-3 text-blue-900">Start Animation</Badge>
         </button>
       </div>
