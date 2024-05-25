@@ -124,25 +124,26 @@ const LandingPage = () => {
     return istDate.format("YYYY-MM-DD HH:mm:ss");
   };
   const handleRowClick = (flight: any) => {
-    const { FlightNum, Source, Destination, Time } = flight;
-    navigate(`/flight/${FlightNum}/info`);
+    const { id, Source, Destination, Time } = flight;
+    navigate(`/flight/${id}/info`);
   };
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
-  const [flightInfo, setFlightInfo] = useState<any>(Data);
+  const [flightInfo, setFlightInfo] = useState<any>();
   useEffect(() => {
     const fetchFlights = async () => {
       try {
-    setLoading(true)
+        setLoading(true);
         const response = await axios.get(
-          "https://aeroguide-backend.onrender.com/api/v1/fetchData/flight"
+          "https://aeroguide-backend.onrender.com/api/v1/flight"
         );
+        console.log(response);
 
-        setFlightInfo(response.data.data);
+        setFlightInfo(response.data);
         setLoading(false);
       } catch (err) {
-        setError("Failed to fetch users");
         setLoading(false);
+        console.error(error);
       }
     };
 
@@ -152,27 +153,33 @@ const LandingPage = () => {
 
   const renderFlightTable = () => {
     if (loading) return <div>Loading...</div>;
-    else {
+    else if (!flightInfo) {
+      <div>No Flights available</div>;
+    } else {
       return (
-        flightInfo.length > 0 &&
+        flightInfo?.length > 0 &&
         flightInfo?.map((flight: any, index: number) => (
           <TableRow key={index}>
             <TableCell>
               <div className="flex items-center gap-2">
                 <img src="/src/images/delhi.png" className="w-10 h-10" />
                 <div className="flex flex-col gap-2">
-                  <h3>{convertUTCToIST(flight.startTime).substring(11,19)}</h3>
-                  <h6 className="text-[#0f172a] text-lg w-[80px] whitespace-nowrap overflow-hidden text-ellipsis">{flight.Source}</h6>
+                  <h3>{convertUTCToIST(flight.startTime).substring(11, 19)}</h3>
+                  <h6 className="text-[#0f172a] text-lg w-[80px] whitespace-nowrap overflow-hidden text-ellipsis">
+                    {flight.Source}
+                  </h6>
                 </div>
                 <img src="/src/images/route.png" className="w-28" />
                 <div className="flex flex-col gap-2">
-                  <h3>{convertUTCToIST(flight.endTime).substring(11,19)}</h3>
-                  <h6 className="text-[#0f172a] text-lg w-[70px] whitespace-nowrap overflow-hidden text-ellipsis">{flight.Destination}</h6>
+                  <h3>{convertUTCToIST(flight.endTime).substring(11, 19)}</h3>
+                  <h6 className="text-[#0f172a] text-lg w-[70px] whitespace-nowrap overflow-hidden text-ellipsis">
+                    {flight.Destination}
+                  </h6>
                 </div>
                 <img src="/src/images/delhi.png" className="w-10 h-10" />
               </div>
             </TableCell>
-            <TableCell className="text-lg">{flight.FlightNum}</TableCell>
+            <TableCell className="text-lg">{flight.flightNumber}</TableCell>
             <TableCell>
               <Badge
                 variant="outline"

@@ -1,8 +1,11 @@
-import React from "react";
-import { Link, Route, Routes } from "react-router-dom";
+import React, { useEffect, useState } from "react";
+import { Link, Route, Routes, useParams } from "react-router-dom";
 import Weather from "./Weather";
+import axios from "axios";
 import Map from "./map";
-import FlightStatus from "./flight-status";// Ensuring import name doesn't clash with Map component
+import FlightStatus from "./flight-status"; // Ensuring import name doesn't clash with Map component
+import { useAppDispatch, useAppSelector } from "@/hooks/redux-hooks";
+import { getFlightById } from "@/store/actions/flight";
 
 // const Dashboard: React.FC = () => {
 //   return (
@@ -26,21 +29,55 @@ import FlightStatus from "./flight-status";// Ensuring import name doesn't clash
 // };
 
 const DashboardContent: React.FC = () => {
+  const [loading, setLoading] = useState(false);
+  const [flightInfo, setFlightInfo] = useState<any>();
+  const dispatch = useAppDispatch();
+  const [weatherInfo, setWeatherInfo] = useState<any>();
+  const params = useParams();
+  console.log(params);
+  const flightData: any = useAppSelector((state) => state.flight);
+
+  useEffect(() => {
+    const fetchFlights = async () => {
+      try {
+        setLoading(true);
+
+        const response: any = await dispatch(
+          getFlightById({ flightId: params.flightNum })
+        );
+        console.log(response.payload.data);
+
+        setLoading(false);
+      } catch (err) {
+        setLoading(false);
+        console.error(err);
+      }
+    };
+    fetchFlights();
+  }, []);
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+  console.log(weatherInfo);
+
   return (
     <div className="flex justify-between w-full h-full p-5">
       {/* Weather Section */}
-      <aside className="w-40 bg-gray-800 p-6">
-        <nav className="flex flex-col space-y-4">
-        </nav>
-      </aside>
+
       <div className="flex-col flex h-full w-[40%] justify-between space-y-10">
         <div className="h-1/2">
-          <Weather />
+          <Weather weatherInfo={weatherInfo} />
         </div>
-        <Map/>
+        <Map />
       </div>
       {/* Flight Section */}
       <FlightStatus />
+      <Link
+        to={`/flight/${params.flightNum}/route`}
+        className="text-2xl text-black block px-3 py-2 rounded-md"
+      >
+        Router
+      </Link>
       {/* Media Player Section */}
     </div>
   );

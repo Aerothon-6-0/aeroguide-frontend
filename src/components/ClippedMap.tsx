@@ -1,11 +1,20 @@
-
 import React, { useEffect, useState } from "react";
-import { MapContainer, TileLayer, Marker, useMap, Popup, Polyline } from "react-leaflet";
-import { LatLngExpression, LatLngBounds } from "leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  useMap,
+  Popup,
+  Polyline,
+} from "react-leaflet";
+import L, { LatLngExpression, LatLngBounds } from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { motion } from 'framer-motion';
+import { motion } from "framer-motion";
 import AirplaneIcon from "./AirplaneIcon";
-import axios from "axios"
+import axios from "axios";
+import { useParams } from "react-router-dom";
+import { useAppDispatch, useAppSelector } from "@/hooks/redux-hooks";
+import { getFlightById } from "@/store/actions/flight";
 interface Bounds {
   northEast: { lat: number; lng: number };
   southWest: { lat: number; lng: number };
@@ -19,43 +28,111 @@ const point2: LatLngExpression = [41.8967, 12.4822];
 const point3: LatLngExpression = [39.9334, 32.8597];
 const destination: LatLngExpression = [51.51, -0.1];
 
-const points: LatLngExpression[] = [source, point1, point2, point3,destination];
+const points: LatLngExpression[] = [
+  source,
+  point1,
+  point2,
+  point3,
+  destination,
+];
 const interpolate = (start: any, end: any, factor: number) => {
   const lat = start[0] + (end[0] - start[0]) * factor;
   const lng = start[1] + (end[1] - start[1]) * factor;
   return [lat, lng] as LatLngExpression;
 };
+const getBoundaryPoints = (
+  sourceLat: number,
+  sourceLong: number,
+  destinationLat: number,
+  destinationLong: number
+) => {
+  const buffer = 5;
+  const minLat = Math.min(sourceLat, destinationLat) - buffer;
+  const maxLat = Math.max(sourceLat, destinationLat) + buffer;
+  const minLong = Math.min(sourceLong, destinationLong) - buffer;
+  const maxLong = Math.max(sourceLong, destinationLong) + buffer;
+
+  return {
+    leftUpper: [minLat, minLong],
+    leftLower: [maxLat, minLong],
+    rightUpper: [minLat, maxLong],
+    rightLower: [maxLat, maxLong],
+  };
+};
+const getBoundsInformation = (src: any, dest: any) => {
+  const boundaryPoints = getBoundaryPoints(src[0], src[1], dest[0], dest[1]);
+  const northEast: LatLngExpression = [
+    boundaryPoints.rightUpper[0],
+    boundaryPoints.rightUpper[1],
+  ];
+  const northWest: LatLngExpression = [
+    boundaryPoints.leftUpper[0],
+    boundaryPoints.leftUpper[1],
+  ];
+  const southWest: LatLngExpression = [
+    boundaryPoints.leftLower[0],
+    boundaryPoints.leftLower[1],
+  ];
+  const southEast: LatLngExpression = [
+    boundaryPoints.rightLower[0],
+    boundaryPoints.rightLower[1],
+  ];
+  const boundObj = {
+    north_east: {
+      lat: northEast[0],
+      long: northEast[1],
+    },
+    north_west: {
+      lat: northWest[0],
+      long: northWest[1],
+    },
+    south_east: {
+      lat: southEast[0],
+      long: southWest[1],
+    },
+    south_west: {
+      lat: southWest[0],
+      long: southWest[1],
+    },
+  };
+  return { northEast, northWest, southWest, southEast, boundObj };
+};
 
 const MapWithBounds: React.FC = () => {
   const [bounds, setBounds] = useState<Bounds | null>(null);
   const [startAnimation, setStartAnimation] = useState(false);
-  const [currentPosition, setCurrentPosition] = useState<LatLngExpression>(source);
+  const flightData: any = useAppSelector((state) => state.flight);
+  console.log(flightData, "in map");
+  const dispatch = useAppDispatch();
+  const [currentPosition, setCurrentPosition] =
+    useState<LatLngExpression>(source);
   const [animationFrame, setAnimationFrame] = useState<number | null>(null);
-
+  const params = useParams();
   const [loading, setLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [boundsInfo, setBoundsInfo] = useState<any>();
+  const [src, setSrc] = useState<any>();
+  const [dest, setDest] = useState<any>();
 
+  // useEffect(() => {
+  //   const fetchBounds = async () => {
+  //     try {
+  //   setLoading(true)
+  //       const response = await axios.post(
+  //         "https://aeroguide-backend.onrender.com/api/v1/flight/:id",pointObject
+  //       );
+  //       console.log(response);
 
-  useEffect(() => {
-    const fetchBounds = async () => {
-      try {
-    setLoading(true)
-        const response = await axios.post(
-          "https://aeroguide-backend.onrender.com/api/v1/flight/:id"
-        );
-        console.log(response);
-        
-        setBoundsInfo(response.data.data);
-        setLoading(false);
-      } catch (err) {
-        setError("Failed to fetch users");
-        setLoading(false);
-      }
-    };
+  //       setBoundsInfo(response.data.data);
+  //       setLoading(false);
+  //     } catch (err) {
+  //       setError("Failed to fetch users");
+  //       setLoading(false);
+  //     }
+  //   };
 
-    fetchBounds();
-  }, []);
+  //   fetchBounds();
+  // }, []);
   const animateFlight = (path: LatLngExpression[], duration: number) => {
     const startTime = performance.now();
     const totalSteps = 100;
@@ -93,107 +170,135 @@ const MapWithBounds: React.FC = () => {
   };
 
   useEffect(() => {
+    console.log(flightData);
+
+    console.log("hre");
+
+    fetchOptimizedRoute();
+  }, []);
+
+  const fetchOptimizedRoute = async () => {
+    try {
+      const data: any = await dispatch(
+        getFlightById({ flightId: params.flightNum })
+      );
+      setSrc([
+        data.flightData?.flight.origin.location[0],
+        data.flightData?.flight.origin.location[1],
+      ]);
+      setDest([
+        data.flightData?.flight.destination.location[0],
+        data.flightData?.flight.destination.location[1],
+      ]);
+
+      const { boundObj } = getBoundsInformation(src, dest);
+      const optimalRoute = await axios.post(
+        `https://b2e7-103-92-103-55.ngrok-free.app/api/v1/flight/${params.flightNum}`,
+        { bounds: boundObj }
+      );
+      console.log(optimalRoute);
+    } catch (error) {
+      console.error(error);
+    }
+  };
+  console.log(src, dest);
+
+  useEffect(() => {
     return () => {
       if (animationFrame) {
         cancelAnimationFrame(animationFrame);
       }
     };
   }, [animationFrame]);
-
-  const getBoundaryPoints = (sourceLat:number, sourceLong:number, destinationLat:number, destinationLong:number) => {
-    const buffer = 5
-    const minLat = Math.min(sourceLat,destinationLat) - buffer;
-    const maxLat = Math.max(sourceLat,destinationLat) + buffer;
-    const minLong = Math.min(sourceLong,destinationLong) - buffer;
-    const maxLong = Math.max(sourceLong,destinationLong) + buffer;
-
-    return {
-      "leftUpper" : [minLat,minLong],
-      "leftLower" : [maxLat,minLong],
-      "rightUpper" : [minLat,maxLong],
-      "rightLower" : [maxLat,maxLong]
-    };
-
-  }
-
-
-  const boundaryPoints = getBoundaryPoints(source[0],source[1],destination[0],destination[1])
-  const northEast:LatLngExpression = [boundaryPoints.rightUpper[0],boundaryPoints.rightUpper[1]];
-  const northWest:LatLngExpression = [boundaryPoints.leftUpper[0],boundaryPoints.leftUpper[1]];
-  const southWest:LatLngExpression = [boundaryPoints.leftLower[0],boundaryPoints.leftLower[1]];
-  const southEast:LatLngExpression = [boundaryPoints.rightLower[0],boundaryPoints.rightLower[1]];
-
+  //[[pt1,pt2],[pt2,pt3]]
+  const corner1 = L.latLng(src[0], src[1]);
+  const corner2 = L.latLng(dest[0], dest[1]);
+  console.log(corner1, corner2);
+  const { northEast, southEast, southWest, northWest } = getBoundsInformation(
+    src,
+    dest
+  );
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-      <div style={{ position: 'relative', height: '70vh', width: '100vw' }}>
-        <MapContainer
-          bounds={new LatLngBounds(source, destination)}
-          style={{ height: '100%', width: '100%' }}
+    <div
+      style={{ display: "flex", flexDirection: "column", alignItems: "center" }}
+    >
+      {/* <div className="w-30 h-screen">
+
+      </div> */}
+      {src && dest && (
+        <div
+          style={{ position: "relative", height: "70vh", width: "70vw" }}
+          className="bg-black"
         >
-          <TileLayer
-            url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-            attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          />
-          <Marker position={source}>
-            <Popup>Source</Popup>
-          </Marker>
-          <Marker position={destination}>
-            <Popup>Destination</Popup>
-          </Marker>
-          <Marker position={northEast}>
-            <Popup>North East</Popup>
-          </Marker>
-          <Marker position={southWest}>
-            <Popup>South West</Popup>
-          </Marker>
-          <Marker position={northWest}>
-            <Popup>North West</Popup>
-          </Marker>
-          <Marker position={southEast}>
-            <Popup>South East</Popup>
-          </Marker>
-          <GetMapBounds setBounds={setBounds} />
-          <Polyline positions={points} color="blue" />
-          {startAnimation && (
-            <motion.div
+          <MapContainer
+            bounds={new LatLngBounds(corner1, corner2)}
+            style={{ height: "100%", width: "100%" }}
+          >
+            <TileLayer
+              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            />
+            <Marker position={corner1}>
+              <Popup>Source</Popup>
+            </Marker>
+            <Marker position={corner2}>
+              <Popup>Destination</Popup>
+            </Marker>
+            <Marker position={northEast}>
+              <Popup>North East</Popup>
+            </Marker>
+            <Marker position={southWest}>
+              <Popup>South West</Popup>
+            </Marker>
+            <Marker position={northWest}>
+              <Popup>North West</Popup>
+            </Marker>
+            <Marker position={southEast}>
+              <Popup>South East</Popup>
+            </Marker>
+            <GetMapBounds setBounds={setBounds} />
+            <Polyline positions={[src, dest]} color="blue" />
+            {startAnimation && (
+              <motion.div
+                style={{
+                  position: "absolute",
+                  top: 0,
+                  left: 0,
+                }}
+                animate={{}}
+              >
+                <Marker position={currentPosition} icon={AirplaneIcon} />
+              </motion.div>
+            )}
+          </MapContainer>
+          {bounds && (
+            <div
               style={{
-                position: 'absolute',
+                position: "absolute",
                 top: 0,
                 left: 0,
+                background: "white",
+                padding: "10px",
               }}
-              animate={{}}
             >
-              <Marker position={currentPosition} icon={AirplaneIcon} />
-            </motion.div>
+              <h4>Visible Map Bounds</h4>
+              <p>
+                NorthEast: {bounds.northEast.lat}, {bounds.northEast.lng}
+              </p>
+              <p>
+                SouthWest: {bounds.southWest.lat}, {bounds.southWest.lng}
+              </p>
+              <p>
+                NorthWest: {bounds.northWest.lat}, {bounds.northWest.lng}
+              </p>
+              <p>
+                SouthEast: {bounds.southEast.lat}, {bounds.southEast.lng}
+              </p>
+            </div>
           )}
-        </MapContainer>
-        {bounds && (
-          <div
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              background: "white",
-              padding: "10px",
-            }}
-          >
-            <h4>Visible Map Bounds</h4>
-            <p>
-              NorthEast: {bounds.northEast.lat}, {bounds.northEast.lng}
-            </p>
-            <p>
-              SouthWest: {bounds.southWest.lat}, {bounds.southWest.lng}
-            </p>
-            <p>
-              NorthWest: {bounds.northWest.lat}, {bounds.northWest.lng}
-            </p>
-            <p>
-              SouthEast: {bounds.southEast.lat}, {bounds.southEast.lng}
-            </p>
-          </div>
-        )}
-      </div>
-      <button onClick={handleStartAnimation} style={{ marginTop: '10px' }}>
+        </div>
+      )}
+      <button onClick={handleStartAnimation} style={{ marginTop: "10px" }}>
         Start Animation
       </button>
     </div>
