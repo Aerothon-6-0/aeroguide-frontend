@@ -148,8 +148,39 @@ const MapWithBounds: React.FC = () => {
     setAnimationFrame(requestAnimationFrame(animate));
   };
 
+  const addRisk = async () => {
+    const data = {
+      
+      flightId: params.flightNum,
+      electronicFailure: (checkboxes.communicationEmergency) ? true : false,
+      visibilityIssue: (checkboxes.weatherEmergency) ? true : false,
+      otherRisks : {
+          mdeicalIsues : checkboxes.medicalEmergency,
+          hijack : checkboxes.hijack,
+          securityEmergency : checkboxes.securityEmergency,
+          flightEmergency : checkboxes.flightEmergency,
+          fuelEmergency : checkboxes.fuelEmergency,
+      },
+      riskLevel :(checkboxes.emergencyConditions) ? "High" : "low",
+      currentLocation : [src,dest]
+  
+  }
 
-  const handleStartAnimation = () => {
+  
+
+  const Risk = await axios.post(
+      `http://localhost:8000/api/v1/emergency`,
+      {data }
+    );
+
+    console.log(Risk)
+
+  }
+
+  const handleStartAnimation = async() => {
+
+  
+
     if (!startAnimation) {
       setStartAnimation(true);
       setCurrentPosition(src);
@@ -158,6 +189,9 @@ const MapWithBounds: React.FC = () => {
       animateFlight([src, ...newPath, dest], 10000); // 10 seconds for the entire flight path
     }
   };
+
+  
+
 
   useEffect(() => {
     const fetchFlightData = async () => {
@@ -196,7 +230,7 @@ const MapWithBounds: React.FC = () => {
         try {
           setLoading(true);
           const optimalRoute = await axios.post(
-            `http://localhost:5500/api/v1/flight/${params.flightNum}`,
+            `http://localhost:8000/api/v1/flight/${params.flightNum}`,
             { bounds: boundObj }
           );
 
@@ -217,6 +251,27 @@ const MapWithBounds: React.FC = () => {
       }
     };
   }, [animationFrame]);
+  const [checkboxes, setCheckboxes] = useState({
+    fuelEmergency: false,
+    medicalEmergency: false,
+    flightEmergency: false,
+    securityEmergency: false,
+    communicationEmergency: false,
+    emergencyConditions: false,
+    hijack: false,
+    weatherEmergency: false,
+  });
+
+  const handleCheckboxChange = (name: string) => (checked: boolean) => {
+    setCheckboxes(prevState => ({
+      ...prevState,
+      [name]: checked,
+    }));
+
+    console.log(checkboxes);
+  };
+
+
 
   return (
     <div className="flex w-screen items-center">
@@ -227,40 +282,38 @@ const MapWithBounds: React.FC = () => {
         </h1>
 
         <div className="flex gap-2 justify-start items-center">
-          <Checkbox />
-          <h1 className="font-semibold">Fuel Emergency</h1>
+        <Checkbox checked={checkboxes.fuelEmergency} onCheckedChange={handleCheckboxChange('fuelEmergency')} />
+        <h1 className="font-semibold">Fuel Emergency</h1>
+      </div>
+      <div className="flex gap-2 justify-start items-center">
+        <Checkbox checked={checkboxes.medicalEmergency} onCheckedChange={handleCheckboxChange('medicalEmergency')} />
+        <h1 className="font-semibold">Medical Emergency</h1>
+      </div>
+      <div className="flex gap-2 justify-start items-center">
+        <Checkbox checked={checkboxes.flightEmergency} onCheckedChange={handleCheckboxChange('flightEmergency')} />
+        <h1 className="font-semibold">Flight Emergency</h1>
+      </div>
+      <div className="flex gap-2 justify-start items-center">
+        <Checkbox checked={checkboxes.securityEmergency} onCheckedChange={handleCheckboxChange('securityEmergency')} />
+        <h1 className="font-semibold">Security Emergency</h1>
+      </div>
+      <div className="flex gap-2 justify-start items-center">
+        <Checkbox checked={checkboxes.communicationEmergency} onCheckedChange={handleCheckboxChange('communicationEmergency')} />
+        <h1 className="font-semibold">Communication Emergency</h1>
+      </div>
+      <div className="flex gap-2 justify-start items-center">
+        <Checkbox checked={checkboxes.emergencyConditions} onCheckedChange={handleCheckboxChange('emergencyConditions')} />
+        <h1 className="font-semibold">Emergency Conditions</h1>
+      </div>
+      <div className="flex gap-2 justify-start items-center">
+        <Checkbox checked={checkboxes.hijack} onCheckedChange={handleCheckboxChange('hijack')} />
+        <h1 className="font-semibold">Hijack</h1>
+      </div>
+      <div className="flex gap-2 justify-start items-start">
+        <Checkbox checked={checkboxes.weatherEmergency} onCheckedChange={handleCheckboxChange('weatherEmergency')} />
+        <h1 className="font-semibold">Weather Emergency - Visibility, Storm</h1>
         </div>
-        <div className="flex gap-2 justify-start items-center">
-          <Checkbox />
-          <h1 className="font-semibold">Medical Emergency</h1>
-        </div>
-        <div className="flex gap-2 justify-start items-center">
-          <Checkbox />
-          <h1 className="font-semibold">Flight Emergency</h1>
-        </div>
-        <div className="flex gap-2 justify-start items-center">
-          <Checkbox />
-          <h1 className="font-semibold">Security Emergency</h1>
-        </div>
-        <div className="flex gap-2 justify-start items-center">
-          <Checkbox />
-          <h1 className="font-semibold">Communication Emergency</h1>
-        </div>
-        <div className="flex gap-2 justify-start items-center">
-          <Checkbox />
-          <h1 className="font-semibold">Emergency Conditions</h1>
-        </div>
-        <div className="flex gap-2 justify-start items-center">
-          <Checkbox />
-          <h1 className="font-semibold">Hijack</h1>
-        </div>
-        <div className="flex gap-2 justify-start items-start">
-          <Checkbox />
-          <h1 className="font-semibold">
-            Weather Emergency - Visibility, Storm
-          </h1>
-        </div>
-        <button onClick={handleStartAnimation} style={{ marginTop: "150px" }}>
+        <button onClick={() => handleStartAnimation} style={{ marginTop: "150px" }}>
           <Badge variant="outline" className="p-3 text-blue-900">Start Animation</Badge>
         </button>
       </div>
