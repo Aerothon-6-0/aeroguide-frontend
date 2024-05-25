@@ -12,6 +12,7 @@ import { FcElectronics } from "react-icons/fc";
 import { MdFlightLand } from "react-icons/md";
 import { BsFillFuelPumpFill } from "react-icons/bs";
 import { WeatherInfo } from "../types.ts"
+import {time, date} from "../lib/utils.ts";
 // import axios from 'axios'
 // import MapWithBounds from './ClippedMap.tsx'
 import { useParams } from "react-router-dom";
@@ -41,6 +42,10 @@ const FlightInfo = () => {
         fetchWeather();
     }, []);
 
+    // useEffect(() => {
+    //     console.log(flightData)
+    // },[flightData])
+
     if (loading) {
         return <div>Loading...</div>;
     }
@@ -53,12 +58,13 @@ const FlightInfo = () => {
         flightData &&
         <div className="w-screen min-h-screen">
             <section className="w-full h-full flex flex-col items-center mb-20">
-                <h3 className="text-center text-indigo-400 mt-10">Flight {flightData?.flightData?.flightNum}</h3>
+                
+                <h3 className="text-center text-indigo-400 mt-10">Flight {flightData?.flightData?.flight.flightNumber}</h3>
                 <div className="flex w-full mt-10 shadow-3xl p-8 items-center justify-evenly">
                     <div className="flex flex-col">
-                        <h4 className="text-xs">{'hi'}</h4>
-                        <h1 className="text-2xl">{Time} AM</h1>
-                        <h4 className="text-xs">Scheduled 13:30</h4>
+                        <h4 className="text-xs"> Scheduled{date(flightData?.flightData?.flight.scheduledDeparture)}</h4>
+                        <h1 className="text-2xl">{time(flightData?.flightData?.flight.scheduledDeparture)}</h1>
+                        <h4 className="text-xs">{time(flightData?.flightData?.flight.ActualDeparture)}</h4>
                         <h4 className="text-xs text-gray-400">{source}</h4>
                     </div>
                     <div className="flex flex-col w-80">
@@ -72,9 +78,9 @@ const FlightInfo = () => {
                         </div>
                     </div>
                     <div>
-                        <h4 className="text-xs">Scheduled 4 Apr</h4>
-                        <h1 className="text-2xl">7:30 AM</h1>
-                        <h4 className="text-xs">Scheduled 13:30</h4>
+                        <h4 className="text-xs"> Scheduled {date(flightData?.flightData?.flight.scheduledArrival)}</h4>
+                        <h1 className="text-2xl">{time(flightData?.flightData?.flight.scheduledArrival)}</h1>
+                        <h4 className="text-xs">{time(flightData?.flightData?.flight.actualArrival)}</h4>
                         <h4 className="text-xs text-gray-400">{destination}</h4>
                     </div>
                 </div>
@@ -106,7 +112,7 @@ const FlightInfo = () => {
                     <Tabs defaultValue="account" className="w-7/12 shadow-3xl rounded-lg">
                         <TabsList className="m-5">
                             <TabsTrigger value="account">Weather Updates</TabsTrigger>
-                            <TabsTrigger value="password">System Status</TabsTrigger>
+                            <TabsTrigger value="password">Aircraft Status</TabsTrigger>
                         </TabsList>
                         <TabsContent value="account" className="m-5">
                             <div className="flex flex-col">
@@ -115,7 +121,7 @@ const FlightInfo = () => {
                                     <div className="flex mt-4 ml-4 items-center gap-2">
                                         <FiWind />
                                         <h6 className="text-xs">Wind Speed</h6>
-                                        <Badge variant="outline">4.1 Km/hr</Badge>
+                                        <Badge variant="outline">{Math.floor(flightData?.flightData?.weatherInfo.current.windSpeed10m)}Km/hr</Badge>
                                     </div>
                                     <div className="flex mt-4 ml-4 items-center gap-2">
                                         <MdVisibility />
@@ -138,7 +144,7 @@ const FlightInfo = () => {
                                         <FaCloudRain />
                                         <h6 className="text-xs">Rain</h6>
                                     </div>
-                                    <Badge variant="outline">0</Badge>
+                                    <Badge variant="outline">{Math.floor(flightData?.flightData?.weatherInfo.current.rain)}</Badge>
                                 </div>
                                 <div className="flex mt-4 ml-4 items-center gap-10">
                                     <div className="flex gap-2">
@@ -172,14 +178,14 @@ const FlightInfo = () => {
                                         <FcElectronics />
                                         <h6 className="text-xs">Electronic Failure</h6>
                                     </div>
-                                    <Badge variant="outline">Medium</Badge>
+                                    <Badge variant="outline">{(flightData?.flightData?.riskAssessment.electronicFailure) ? 'low' : 'high'}</Badge>
                                 </div>
                                 <div className="flex mt-4 ml-4 items-center gap-10">
                                     <div className="flex gap-2">
                                         <MdFlightLand />
                                         <h6 className="text-xs">Damage Part</h6>
                                     </div>
-                                    <Badge variant="outline">Low</Badge>
+                                    <Badge variant="outline">{}</Badge>
                                 </div>
                                 <div className="flex mt-4 ml-4 items-center gap-10">
                                     <div className="flex gap-2">
