@@ -100,43 +100,23 @@ const getBoundsInformation = (src: any, dest: any) => {
 
 const MapWithBounds: React.FC = () => {
   const [bounds, setBounds] = useState<Bounds | null>(null);
+  const [boundsInfo, setBoundsInfo] = useState<any>();
   const [startAnimation, setStartAnimation] = useState(false);
+  const [boundaryBound, setBoundaryBound] = useState<any>();
   const flightData: any = useAppSelector((state) => state.flight);
-  console.log(flightData, "in map");
+
   const dispatch = useAppDispatch();
   const [currentPosition, setCurrentPosition] =
     useState<LatLngExpression>(source);
   const [animationFrame, setAnimationFrame] = useState<number | null>(null);
   const params = useParams();
-  const [loading, setLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
-  const [boundsInfo, setBoundsInfo] = useState<any>();
   const [src, setSrc] = useState<any>();
   const [dest, setDest] = useState<any>();
 
-  // useEffect(() => {
-  //   const fetchBounds = async () => {
-  //     try {
-  //   setLoading(true)
-  //       const response = await axios.post(
-  //         "https://aeroguide-backend.onrender.com/api/v1/flight/:id",pointObject
-  //       );
-  //       console.log(response);
-
-  //       setBoundsInfo(response.data.data);
-  //       setLoading(false);
-  //     } catch (err) {
-  //       setError("Failed to fetch users");
-  //       setLoading(false);
-  //     }
-  //   };
-
-  //   fetchBounds();
-  // }, []);
   const animateFlight = (path: LatLngExpression[], duration: number) => {
     const startTime = performance.now();
     const totalSteps = 100;
-    const stepDuration = duration / totalSteps;
+    // const stepDuration = duration / totalSteps;
 
     const animate = (time: number) => {
       const elapsedTime = time - startTime;
@@ -170,38 +150,58 @@ const MapWithBounds: React.FC = () => {
   };
 
   useEffect(() => {
-    console.log(flightData);
 
-    console.log("hre");
+    const fetchFlightData = async () => {
+      try {
+        const data: any = await dispatch(
+          getFlightById({ flightId: params.flightNum })
+        );
 
+        if (data.payload.data) {
+
+          setSrc([
+            data.payload.data.flight.origin.location[0],
+            data.payload.data.flight.origin.location[1],
+          ]);
+          setDest([
+            data.payload.data.flight.destination.location[0],
+            data.payload.data.flight.destination.location[1],
+          ]);
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    fetchFlightData();
+  }, [dispatch, params.flightNum]);
+
+
+
+
+
+  useEffect(() => {
+    const fetchOptimizedRoute = async () => {
+      if (src && dest) {
+        const { northEast, southEast, southWest, northWest, boundObj } = getBoundsInformation(src, dest);
+        console.log(boundObj, 'boundObj')
+        setBoundsInfo({ northEast, southEast, southWest, northWest });
+        setBoundaryBound(boundObj)
+
+        try {
+
+          const optimalRoute = await axios.post(
+            `https://b2e7-103-92-103-55.ngrok-free.app/api/v1/flight/${params.flightNum}`,
+            { bounds: boundObj }
+          );
+          console.log(optimalRoute);
+        } catch (error) {
+          console.error(error);
+        }
+      }
+    };
     fetchOptimizedRoute();
-  }, []);
+  }, [params.flightNum, src]);
 
-  const fetchOptimizedRoute = async () => {
-    try {
-      const data: any = await dispatch(
-        getFlightById({ flightId: params.flightNum })
-      );
-      setSrc([
-        data.flightData?.flight.origin.location[0],
-        data.flightData?.flight.origin.location[1],
-      ]);
-      setDest([
-        data.flightData?.flight.destination.location[0],
-        data.flightData?.flight.destination.location[1],
-      ]);
-
-      const { boundObj } = getBoundsInformation(src, dest);
-      const optimalRoute = await axios.post(
-        `https://b2e7-103-92-103-55.ngrok-free.app/api/v1/flight/${params.flightNum}`,
-        { bounds: boundObj }
-      );
-      console.log(optimalRoute);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-  console.log(src, dest);
 
   useEffect(() => {
     return () => {
@@ -210,14 +210,7 @@ const MapWithBounds: React.FC = () => {
       }
     };
   }, [animationFrame]);
-  //[[pt1,pt2],[pt2,pt3]]
-  const corner1 = L.latLng(src[0], src[1]);
-  const corner2 = L.latLng(dest[0], dest[1]);
-  console.log(corner1, corner2);
-  const { northEast, southEast, southWest, northWest } = getBoundsInformation(
-    src,
-    dest
-  );
+
   return (
     <div
       style={{ display: "flex", flexDirection: "column", alignItems: "center" }}
@@ -225,35 +218,35 @@ const MapWithBounds: React.FC = () => {
       {/* <div className="w-30 h-screen">
 
       </div> */}
-      {src && dest && (
+      {src && dest && boundsInfo && (
         <div
           style={{ position: "relative", height: "70vh", width: "70vw" }}
           className="bg-black"
         >
           <MapContainer
-            bounds={new LatLngBounds(corner1, corner2)}
+            bounds={new LatLngBounds(L.latLng(src[0], src[1]), L.latLng(dest[0], dest[1]))}
             style={{ height: "100%", width: "100%" }}
           >
             <TileLayer
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             />
-            <Marker position={corner1}>
+            <Marker position={L.latLng(src[0], src[1])}>
               <Popup>Source</Popup>
             </Marker>
-            <Marker position={corner2}>
+            <Marker position={L.latLng(dest[0], dest[1])}>
               <Popup>Destination</Popup>
             </Marker>
-            <Marker position={northEast}>
+            <Marker position={boundsInfo?.northEast!}>
               <Popup>North East</Popup>
             </Marker>
-            <Marker position={southWest}>
+            <Marker position={boundsInfo?.southWest!}>
               <Popup>South West</Popup>
             </Marker>
-            <Marker position={northWest}>
+            <Marker position={boundsInfo?.northWest!}>
               <Popup>North West</Popup>
             </Marker>
-            <Marker position={southEast}>
+            <Marker position={boundsInfo?.southEast!}>
               <Popup>South East</Popup>
             </Marker>
             <GetMapBounds setBounds={setBounds} />
