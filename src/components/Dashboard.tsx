@@ -61,7 +61,7 @@ const DashboardContent: React.FC = () => {
   console.log(weatherInfo);
 
   return (
-    <div className="flex justify-between w-full h-full p-5">
+    <div className="flex justify-between w-screen h-screen p-5 bg-gray-800">
       {/* Weather Section */}
 
       <div className="flex-col flex h-full w-[40%] justify-between space-y-10">
@@ -72,12 +72,6 @@ const DashboardContent: React.FC = () => {
       </div>
       {/* Flight Section */}
       <FlightStatus />
-      <Link
-        to={`/flight/${params.flightNum}/route`}
-        className="text-2xl text-black block px-3 py-2 rounded-md"
-      >
-        Router
-      </Link>
       {/* Media Player Section */}
     </div>
   );
