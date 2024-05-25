@@ -15,7 +15,8 @@ import axios from "axios";
 import { useParams } from "react-router-dom";
 import { useAppDispatch, useAppSelector } from "@/hooks/redux-hooks";
 import { getFlightById } from "@/store/actions/flight";
-import { Badge } from "@/components/ui/badge"
+import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface Bounds {
   northEast: { lat: number; lng: number };
@@ -38,8 +39,7 @@ const points: LatLngExpression[] = [
   destination,
 ];
 const interpolate = (start: any, end: any, factor: number) => {
-
-  console.log(start, end, factor)
+  console.log(start, end, factor);
   const lat = start[0] + (end[0] - start[0]) * factor;
   const lng = start[1] + (end[1] - start[1]) * factor;
   return [lat, lng] as LatLngExpression;
@@ -119,7 +119,7 @@ const MapWithBounds: React.FC = () => {
   const [dest, setDest] = useState<any>();
 
   const animateFlight = (path: LatLngExpression[], duration: number) => {
-    console.log(path)
+    console.log(path);
     const startTime = performance.now();
     const totalSteps = 100;
     // const stepDuration = duration / totalSteps;
@@ -184,18 +184,21 @@ const MapWithBounds: React.FC = () => {
   useEffect(() => {
     const fetchOptimizedRoute = async () => {
       if (src && dest) {
-        const { northEast, southEast, southWest, northWest, boundObj } = getBoundsInformation(src, dest);
+        const { northEast, southEast, southWest, northWest, boundObj } =
+          getBoundsInformation(src, dest);
 
         setBoundsInfo({ northEast, southEast, southWest, northWest });
         setBoundaryBound(boundObj);
 
         try {
           const optimalRoute = await axios.post(
-            `https://aeroguide-backend.onrender.com/api/v1/flight/${params.flightNum}`,
+            `http://localhost:5500/api/v1/flight/${params.flightNum}`,
             { bounds: boundObj }
           );
 
-          setPath1(optimalRoute.data.path1.map((path: any) => [path.lat, path.long]))
+          setPath1(
+            optimalRoute.data.path1.map((path: any) => [path.lat, path.long])
+          );
         } catch (error) {
           console.error(error);
         }
@@ -203,7 +206,6 @@ const MapWithBounds: React.FC = () => {
     };
     fetchOptimizedRoute();
   }, [params.flightNum, src]);
-
 
   useEffect(() => {
     return () => {
@@ -215,17 +217,49 @@ const MapWithBounds: React.FC = () => {
 
   return (
     <div className="flex w-screen items-center">
-      <div className="flex flex-col p-10 w-[30%] h-screen bg-blue-200 shadow-3xl">
-        <h1 className="mt-10 ml-10 font-semibold">Emergency Conditions</h1>
-        <h3 className="mt-10 ml-10 font-semibold">Fuel Emergency</h3>
-        <h3 className="mt-10 ml-10 font-semibold">Medical Emergency</h3>
-        <h3 className="mt-10 ml-10 font-semibold">Flight Emergency</h3>
-        <h3 className="mt-10 ml-10 font-semibold">Security Emergency</h3>
-        <h3 className="mt-10 ml-10 font-semibold">Communication Emergency</h3>
-        <h3 className="mt-10 ml-10 font-semibold">Hijack</h3>
-        <h3 className="mt-10 ml-10 font-semibold">Weather Emergency - Visibility, Storm</h3>
+      <div className="flex flex-col p-10 w-[30%] h-screen bg-blue-200 shadow-3xl gap-3">
+        <h1 className="mt-10 ml-10 text-2xl font-bold mb-20">
+          Emergency Conditions
+        </h1>
+
+        <div className="flex gap-2 justify-start items-center">
+          <Checkbox />
+          <h1 className="font-semibold">Fuel Emergency</h1>
+        </div>
+        <div className="flex gap-2 justify-start items-center">
+          <Checkbox />
+          <h1 className="font-semibold">Medical Emergency</h1>
+        </div>
+        <div className="flex gap-2 justify-start items-center">
+          <Checkbox />
+          <h1 className="font-semibold">Flight Emergency</h1>
+        </div>
+        <div className="flex gap-2 justify-start items-center">
+          <Checkbox />
+          <h1 className="font-semibold">Security Emergency</h1>
+        </div>
+        <div className="flex gap-2 justify-start items-center">
+          <Checkbox />
+          <h1 className="font-semibold">Communication Emergency</h1>
+        </div>
+        <div className="flex gap-2 justify-start items-center">
+          <Checkbox />
+          <h1 className="font-semibold">Emergency Conditions</h1>
+        </div>
+        <div className="flex gap-2 justify-start items-center">
+          <Checkbox />
+          <h1 className="font-semibold">Hijack</h1>
+        </div>
+        <div className="flex gap-2 justify-start items-start">
+          <Checkbox />
+          <h1 className="font-semibold">
+            Weather Emergency - Visibility, Storm
+          </h1>
+        </div>
         <button onClick={handleStartAnimation} style={{ marginTop: "150px" }}>
-        <Badge variant="outline" className="p-3 text-blue-900">Start Animation</Badge>
+          <Badge variant="outline" className="p-3 text-blue-900">
+            Start Animation
+          </Badge>
         </button>
       </div>
       {src && dest && boundsInfo && path1 && (
